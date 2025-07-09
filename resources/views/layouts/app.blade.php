@@ -37,7 +37,7 @@
         <div class="auth-container-fullscreen">
             @yield('content')
         </div>
-    @endif
+    @endif 
 
     {{-- PASTIKAN TIDAK ADA MOBILE POP-UP WRAPPER DI SINI LAGI --}}
 
