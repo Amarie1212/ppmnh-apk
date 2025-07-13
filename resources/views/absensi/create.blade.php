@@ -36,7 +36,11 @@
         <div class="form-section date-activity-section">
             <div class="form-group">
                 <label for="tanggal">Tanggal:</label>
-                <input type="date" name="tanggal" id="tanggal" class="tambah-absen-input filter-input" value="{{ old('tanggal', \Carbon\Carbon::now()->format('Y-m-d')) }}" required>
+                {{-- Set the value directly in the HTML using the desired display format for initial render --}}
+                <input type="text" id="tanggal" class="tambah-absen-input filter-input"
+                       value="{{ \Carbon\Carbon::parse(old('tanggal', \Carbon\Carbon::now()->format('Y-m-d')))->isoFormat('dddd, DD MMMM YYYY') }}"
+                       placeholder="Hari, DD Bulan YYYY" required>
+                <input type="hidden" name="tanggal" id="tanggal_hidden" value="{{ old('tanggal', \Carbon\Carbon::now()->format('Y-m-d')) }}">
             </div>
             <div class="form-group">
                 <label for="kegiatan">Kegiatan:</label>
@@ -68,7 +72,6 @@
         <button type="submit" class="tambah-absen-btn">Simpan Absensi</button>
     </form>
 </div>
-
 <script>
     const allRelevantUsers = @json($allRelevantUsers);
     const absensiDataBulanan = @json($absensiDataBulanan);
@@ -82,11 +85,26 @@
         'mt': ['Ngaji Subuh', 'Ngaji Maghrib']
     };
 
+    // New: Map kegiatan based on day of the week
+    const dayBasedActivityMap = {
+        'Minggu': ['Ngaji Maghrib'], // Sunday
+        'Senin': ['Apel', 'Ngaji Subuh', 'Ngaji Maghrib'], // Monday
+        'Selasa': ['Apel', 'Ngaji Subuh', 'Ngaji Maghrib'], // Tuesday
+        'Rabu': ['Apel', 'Ngaji Subuh', 'Ngaji Maghrib'], // Wednesday
+        'Kamis': ['Apel', 'Ngaji Subuh', 'Ngaji Maghrib'], // Thursday
+        'Jumat': ['Apel', 'Ngaji Subuh', 'Ngaji Maghrib'], // Friday
+        'Sabtu': ['Apel', 'Ngaji Subuh'] // Saturday
+    };
+
+    // Define all possible activities to use when no category is selected
+    const ALL_POSSIBLE_ACTIVITIES = ['Apel', 'Ngaji Subuh', 'Ngaji Maghrib'];
+
     function updateKegiatanOptions() {
         const kategoriSelect = document.getElementById('kategori');
         const kegiatanSelect = document.getElementById('kegiatan');
+        const tanggalHiddenInput = document.getElementById('tanggal_hidden');
         const selectedKategori = kategoriSelect.value;
-        const currentKegiatan = kegiatanSelect.value;
+        const currentKegiatan = kegiatanSelect.value; // Store current selection before clearing
 
         kegiatanSelect.innerHTML = '';
 
@@ -95,38 +113,71 @@
         placeholderKegiatanOption.disabled = true;
         placeholderKegiatanOption.textContent = "-- Pilih Kegiatan --";
 
-        let isKegiatanSelected = false;
-        const options = activityMap[selectedKategori] || [];
+        let activitiesBasedOnCategory = [];
+        if (selectedKategori && activityMap[selectedKategori]) {
+            activitiesBasedOnCategory = activityMap[selectedKategori];
+        } else {
+            // If no specific category is selected, consider all general activities.
+            activitiesBasedOnCategory = ALL_POSSIBLE_ACTIVITIES;
+        }
 
-        options.forEach(kegiatan => {
+        let activitiesBasedOnDay = [];
+        if (tanggalHiddenInput.value) {
+            const selectedDate = new Date(tanggalHiddenInput.value);
+            // Check for valid date
+            if (isNaN(selectedDate.getTime())) {
+                activitiesBasedOnDay = ALL_POSSIBLE_ACTIVITIES; // Fallback if date is invalid
+            } else {
+                const options = { weekday: 'long' };
+                const dayName = selectedDate.toLocaleDateString('id-ID', options);
+
+                if (dayBasedActivityMap[dayName]) {
+                    activitiesBasedOnDay = dayBasedActivityMap[dayName];
+                } else {
+                    // Fallback: If day is not defined in map, allow all activities.
+                    activitiesBasedOnDay = ALL_POSSIBLE_ACTIVITIES;
+                }
+            }
+        } else {
+            // If no date is selected (shouldn't happen often with defaultDate)
+            activitiesBasedOnDay = ALL_POSSIBLE_ACTIVITIES;
+        }
+
+        // Intersect the two sets of activities (category-based and day-based)
+        const finalPossibleActivities = activitiesBasedOnCategory.filter(activity =>
+            activitiesBasedOnDay.includes(activity)
+        );
+
+        let isKegiatanSelected = false;
+        finalPossibleActivities.forEach(kegiatan => {
             const option = document.createElement('option');
             option.value = kegiatan;
             option.textContent = kegiatan;
-            if (kegiatan === currentKegiatan) {
+            if (kegiatan === currentKegiatan) { // Re-select the previously selected activity if still valid
                 option.selected = true;
                 isKegiatanSelected = true;
             }
             kegiatanSelect.appendChild(option);
         });
 
-        if (!isKegiatanSelected) {
+        // Always prepend placeholder. Select it if no activity is pre-selected or no activities are available.
+        kegiatanSelect.prepend(placeholderKegiatanOption);
+        if (!isKegiatanSelected || finalPossibleActivities.length === 0) {
             placeholderKegiatanOption.selected = true;
-        }
-        if (!kegiatanSelect.querySelector('option[value=""][disabled]')) {
-            kegiatanSelect.prepend(placeholderKegiatanOption);
         }
     }
 
     function filterAndRenderSantri() {
         const kategori = document.getElementById('kategori').value;
-        const tanggal = document.getElementById('tanggal').value;
+        const tanggal = document.getElementById('tanggal_hidden').value;
         const kegiatan = document.getElementById('kegiatan').value;
         const santriListContainer = document.getElementById('santri-list-container');
 
+        // Added 'Pilih Kegiatan' check here, as per your request, santri list should be empty if 'kegiatan' isn't chosen
         if (!kategori || !tanggal || !kegiatan) {
             santriListContainer.innerHTML = `
                 <tr class="info-row">
-                    <td colspan="2"><p class="info-message"></p></td>
+                    <td colspan="2"><p class="info-message">Pilih Kategori, Tanggal, dan Kegiatan untuk melihat daftar santri.</p></td>
                 </tr>
             `;
             return;
@@ -153,7 +204,8 @@
                 const initialStatus = existingAbsence ? existingAbsence.status : null;
 
                 santriRowsHtml += `
-                <tr class="santri-row table-row-appear" style="animation-delay: ${index * 0.05}s;"> <td>
+                <tr class="santri-row table-row-appear" style="animation-delay: ${index * 0.05}s;">
+                    <td>
                         <input type="hidden" name="attendances[${user.id}][user_id]" value="${user.id}">
                         <input type="hidden" name="attendances[${user.id}][kelas]" value="${user.kelas}">
                         <div class="santri-info">
@@ -202,14 +254,16 @@
         updateKegiatanOptions();
         filterAndRenderSantri();
     });
-    document.getElementById('tanggal').addEventListener('change', filterAndRenderSantri);
     document.getElementById('kegiatan').addEventListener('change', filterAndRenderSantri);
 
     document.addEventListener('DOMContentLoaded', () => {
         const kategoriSelect = document.getElementById('kategori');
         const kegiatanSelect = document.getElementById('kegiatan');
+        const tanggalInput = document.getElementById('tanggal');
+        const tanggalHiddenInput = document.getElementById('tanggal_hidden');
 
-        if ("{{ old('kategori') }}" === '' && kategoriSelect.value !== '') {
+        // Ensure category placeholder is selected initially if no old value
+        if ("{{ old('kategori') }}" === '') {
             kategoriSelect.value = '';
             const placeholderKategoriOption = kategoriSelect.querySelector('option[value=""][disabled]');
             if (placeholderKategoriOption) {
@@ -217,8 +271,50 @@
             }
         }
 
-        updateKegiatanOptions();
-        filterAndRenderSantri();
+        // Initialize Flatpickr
+        const fp = flatpickr("#tanggal", {
+            locale: "id", // Set locale to Indonesian
+            dateFormat: "Y-m-d", // Actual format for internal use/hidden input
+            altInput: true, // Enable alternative input (the one user sees)
+            altFormat: "l, d F Y", // Desired display format: Hari, DD Bulan YYYY
+            defaultDate: tanggalHiddenInput.value, // Set default date from old('tanggal') or current date
+            onReady: function(selectedDates, dateStr, instance) {
+                // Ensure hidden input is correctly set on load.
+                // This might seem redundant, but ensures consistency in case of browser quirks.
+                if (selectedDates.length > 0) {
+                    tanggalHiddenInput.value = instance.formatDate(selectedDates[0], "Y-m-d");
+                    // Explicitly update the altInput to ensure it reflects the formatted date immediately
+                    instance.altInput.value = instance.formatDate(selectedDates[0], "l, d F Y");
+                }
+                updateKegiatanOptions(); // Update kegiatan options based on initial date
+                filterAndRenderSantri(); // Filter santri when Flatpickr is ready
+            },
+            onChange: function(selectedDates, dateStr, instance) {
+                // Update the hidden input value when date changes
+                if (selectedDates.length > 0) {
+                    tanggalHiddenInput.value = instance.formatDate(selectedDates[0], "Y-m-d");
+                }
+                updateKegiatanOptions(); // Update kegiatan options based on new date
+                filterAndRenderSantri(); // Re-filter santri based on new date
+            }
+        });
+
+        // If for some reason Flatpickr's altInput isn't immediately reflecting the defaultDate on page load,
+        // manually set it after a very short delay or directly after initialization.
+        // This is a common workaround for rendering inconsistencies on different browsers/devices.
+        // For instance, if the server renders the date as 'YYYY-MM-DD' in 'tanggal_hidden',
+        // but the browser's default text input tries to format it differently before Flatpickr takes over.
+        // By explicitly setting altInput.value here, we ensure it's always in the desired format.
+        if (fp && fp.selectedDates.length > 0) {
+            fp.altInput.value = fp.formatDate(fp.selectedDates[0], "l, d F Y");
+        }
+
+
+        // Initial call to set options based on pre-selected category and date
+        // This is important if `old('kategori')` or `old('tanggal')` has a value.
+        // The calls within onReady/onChange ensure this happens on date selection/change.
+        // For the initial load, it's covered by onReady.
+        // updateKegiatanOptions(); // This call is redundant due to onReady.
 
         const successAlert = document.getElementById('absensi-success-alert');
         if (successAlert) {

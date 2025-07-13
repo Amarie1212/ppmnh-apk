@@ -9,10 +9,14 @@
         <h3>Kelola Izin Tambah Absen</h3>
     </div>
 
-    <div id="izin-toast" class="izin-toast-local" style="display: none;"></div>
+    {{-- Notifikasi Toast --}}
+    <div id="izin-toast" class="izin-toast-local" style="display: none;">
+        <i id="izinToastIcon" class="izin-toast-icon" data-lucide=""></i> {{-- Ikon akan diatur oleh JS --}}
+        <span id="izinToastMessage"></span> {{-- Pesan akan diatur oleh JS (akan disembunyikan untuk ikon-only) --}}
+    </div>
 
     {{-- Check if there are any users to display across all classes --}}
-    @if($penerobosByKelas->isEmpty())
+    @if($usersByKelas->isEmpty())
         {{-- If no data at all, display a simplified empty state --}}
         <div class="izinakses-empty-state">
             <p>Tidak ada data untuk ditampilkan.</p>
@@ -20,7 +24,7 @@
     @else
         {{-- If there is data, display tabs and tables --}}
         <div class="izinakses-tab-nav">
-            @foreach($penerobosByKelas as $kelas => $users)
+            @foreach($usersByKelas as $kelas => $users)
                 <button class="izinakses-tab {{ $loop->first ? 'active' : '' }}" data-target="tab-{{ Str::slug($kelas) }}">
                     {{ strtolower($kelas) === 'mt' ? 'MT' : Str::title($kelas) }}
                 </button>
@@ -28,7 +32,7 @@
             <div class="izinakses-tab-indicator"></div>
         </div>
 
-        @foreach($penerobosByKelas as $kelas => $users)
+        @foreach($usersByKelas as $kelas => $users)
             <div class="izinakses-tab-content {{ $loop->first ? 'active' : '' }}" id="tab-{{ Str::slug($kelas) }}">
                 <div class="izinakses-wrapper fade-anim">
                     <table class="izinakses-table">
@@ -67,7 +71,7 @@
     @endif
 
     <div class="izinakses-footer">
-        <button id="saveAllPermissions" class="btn-approve" {{ $penerobosByKelas->isEmpty() ? 'disabled' : '' }}>Simpan</button>
+        <button id="saveAllPermissions" class="btn-approve" {{ $usersByKelas->isEmpty() ? 'disabled' : '' }}>Simpan</button>
     </div>
 </div>
 @endsection
@@ -79,6 +83,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const tabContents = document.querySelectorAll(".izinakses-tab-content");
     const indicator = document.querySelector(".izinakses-tab-indicator");
     const toastElement = document.getElementById("izin-toast");
+    const izinToastIcon = document.getElementById("izinToastIcon"); // Get the icon element
+    const izinToastMessage = document.getElementById("izinToastMessage"); // Get the message element
     const saveButton = document.getElementById("saveAllPermissions");
 
     let currentIndex = 0;
@@ -200,7 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const data = await response.json();
 
                 if (response.ok) {
-                    showToast('Izin absen berhasil diperbarui.', 'success');
+                    showToast('Izin absen berhasil diperbarui.', 'success'); // Pesan ini akan disembunyikan
                 } else {
                     showToast(data.message || 'Terjadi kesalahan saat menyimpan perubahan.', 'error');
                     console.error('Batch update failed:', data.errors || data.message);
@@ -218,16 +224,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function showToast(message, type = 'success') {
         toastElement.classList.remove('hide-alert');
-        toastElement.classList.remove('success', 'error');
-        toastElement.classList.add(type);
-        toastElement.textContent = message;
-        toastElement.style.display = 'block';
-        void toastElement.offsetWidth;
+        toastElement.classList.remove('success', 'error'); // Remove old type classes
+        toastElement.classList.add(type); // Add new type class
+
+        // Set icon based on type
+        if (type === 'success') {
+            izinToastIcon.setAttribute('data-lucide', 'check-circle');
+        } else if (type === 'error') {
+            izinToastIcon.setAttribute('data-lucide', 'x-circle');
+        }
+        // Re-render Lucide icons if they are dynamically added/changed
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
+
+        izinToastMessage.textContent = message; // Set message text
+        izinToastMessage.style.display = 'none'; // Hide text for icon-only display
+
+        toastElement.style.display = 'flex'; // Use flex to center icon
+        void toastElement.offsetWidth; // Trigger reflow
         toastElement.classList.add('show-alert');
 
         let displayDuration = 3000;
         if (type === 'success') {
-            displayDuration = 1000;
+            displayDuration = 1000; // Success toast disappears faster
         }
 
         setTimeout(() => {
@@ -243,6 +263,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }, displayDuration);
     }
 
+    // Check for session messages on page load
     @if(session('success'))
         showToast("{{ session('success') }}", 'success');
     @elseif(session('error'))

@@ -6,7 +6,14 @@
     <title>@yield('title', 'Dashboard')</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <script src="https://unpkg.com/lucide@latest"></script>
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.min.css">
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/monthSelect.js"></script>
     <script>
         // Atur tema awal sebelum konten tampil
         (function () {
@@ -37,7 +44,7 @@
         <div class="auth-container-fullscreen">
             @yield('content')
         </div>
-    @endif 
+    @endif
 
     {{-- PASTIKAN TIDAK ADA MOBILE POP-UP WRAPPER DI SINI LAGI --}}
 

@@ -54,24 +54,134 @@ body {height: 100%;margin: 0;font-family: 'Inter', Arial, sans-serif;background-
 /* =================================================================== */
 /* === 3. KOMPONEN HEADBAR (MOBILE-FIRST) === */
 /* =================================================================== */
-.headbar {display: flex;align-items: center;position: fixed;width: 100%;top: 0;left: 0;z-index: 1050;background-color: var(--bg-primary);border-bottom: 1px solid var(--border);box-sizing: border-box;height: 80px;padding: 0 24px;transition: all 0.3s ease;height: 60px;padding: 0 16px;box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07);}
-html.dark .headbar {box-shadow: 0 4px 6px -1px rgba(255, 255, 255, 0.05);}
+/* =================================================================== */
+/* === 3. KOMPONEN HEADBAR (MOBILE-FIRST) === */
+/* =================================================================== */
+.headbar {
+    display: flex;
+    align-items: center;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1050;
+    background-color: var(--bg-primary);
+    border-bottom: 1px solid var(--border);
+    box-sizing: border-box;
+    height: 60px;
+    padding: 0 16px 0 24px; /* Padding kiri untuk mobile */
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07);
+    /* PERBAIKAN UTAMA DI SINI */
+    justify-content: space-between; /* Mendorong .left ke kiri dan .right ke kanan */
+    gap: 16px; /* Tambahkan jarak minimum antara bagian kiri dan kanan */
+}
+
+html.dark .headbar {
+    box-shadow: 0 4px 6px -1px rgba(255, 255, 255, 0.05);
+}
+
 .headbar .left,
-.headbar .right {display: flex;align-items: center;}
-.headbar .right {margin-left: auto;position: relative;}
+.headbar .right {
+    display: flex;
+    align-items: center;
+    /* Pastikan keduanya tidak tumbuh secara paksa, tapi boleh menyusut */
+    flex-grow: 0;
+    flex-shrink: 1;
+    min-width: 0; /* Penting untuk overflow: hidden bekerja */
+}
+
+.headbar .right {
+    /* HAPUS: margin-left: auto; karena justify-content: space-between; sudah menangani positioning */
+    position: relative;
+    justify-content: flex-end; /* Memastikan konten di dalam .right tetap rata kanan */
+}
+
 .logo-area,
-.user-label {display: flex;align-items: center;  gap: 12px;}
-.user-label {cursor: pointer;padding: 6px;border-radius: 50px;transition: background-color 0.2s ease;}
-.user-label:hover {background-color: var(--bg-tertiary);}
+.user-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-label {
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50px;
+    transition: background-color 0.2s ease;
+    min-width: 0;
+    flex-grow: 1; /* user-label boleh tumbuh di dalam .right */
+}
+
+.user-label:hover {
+    background-color: var(--bg-tertiary);
+}
+
 .logo-ppm,
-.avatar {border-radius: 50%; object-fit: cover;  }
-.logo-ppm {width: 45px;height: 45px;cursor: pointer;}
-.profile-trigger {background: none;border: none;padding: 6px;border-radius: 50%;display: flex;align-items: center;justify-content: center;cursor: pointer;transition: background-color 0.2s ease;}
-.profile-trigger:hover {background-color: var(--bg-tertiary);}
-.settings-icon {width: 24px;height: 24px;color: var(--text-primary);stroke-width: 2;transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);}
-.settings-icon.rotate {transform: rotate(135deg);}
-.logo-text {font-size: 15px;font-weight: 600;white-space: nowrap;}
-.user-name {font-size: 13px;font-weight: 500;white-space: nowrap;}
+.avatar {
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.logo-ppm {
+    width: 45px;
+    height: 45px;
+    cursor: pointer;
+    flex-shrink: 0; /* Jangan biarkan logo menyusut */
+}
+
+.profile-trigger {
+    background: none;
+    border: none;
+    padding: 6px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    flex-shrink: 0; /* Jangan biarkan tombol menyusut */
+    margin-left: 8px; /* Berikan sedikit jarak antara nama dan ikon */
+}
+
+.profile-trigger:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.settings-icon {
+    width: 24px;
+    height: 24px;
+    color: var(--text-primary);
+    stroke-width: 2;
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    flex-shrink: 0; /* Jangan biarkan ikon menyusut */
+}
+
+.settings-icon.rotate {
+    transform: rotate(135deg);
+}
+
+.logo-text {
+    font-size: 15px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex-shrink: 1; /* Biarkan teks logo menyusut jika perlu */
+}
+
+.user-name {
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+
 .profile-popup {
     position: absolute;
     top: calc(100% + 12px);
@@ -80,7 +190,7 @@ html.dark .headbar {box-shadow: 0 4px 6px -1px rgba(255, 255, 255, 0.05);}
     background: var(--bg-secondary);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 8px; /* Padding diatur di dalam untuk kontrol lebih baik */
+    padding: 8px;
     z-index: 1000;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
     opacity: 0;
@@ -130,21 +240,18 @@ html.dark .headbar {box-shadow: 0 4px 6px -1px rgba(255, 255, 255, 0.05);}
     color: var(--text-primary);
     cursor: pointer;
     transition: background-color 0.2s ease, color 0.2s ease;
-    /* --- PERBAIKAN DI SINI --- */
-    white-space: normal; /* Memungkinkan teks membungkus */
-    word-break: break-word; /* Memecah kata panjang jika perlu */
-    box-sizing: border-box; /* Pastikan padding dihitung dalam width 100% */
+    white-space: normal;
+    word-break: break-word;
+    box-sizing: border-box;
 }
 
 /* Khusus untuk item yang sedang aktif atau di-hover */
 .profile-popup a:hover,
 .profile-popup button:not(.logout-btn):hover,
-/* Jika ada kelas 'active' atau 'selected' untuk item aktif, tambahkan di sini */
 .profile-popup a.active,
-.profile-popup button.active { /* Contoh: jika ada kelas 'active' */
+.profile-popup button.active {
     background-color: var(--accent);
     color: white;
-    /* Pastikan tidak ada properti yang bertentangan di sini */
 }
 
 .profile-popup a .lucide,
@@ -154,25 +261,57 @@ html.dark .headbar {box-shadow: 0 4px 6px -1px rgba(255, 255, 255, 0.05);}
     stroke-width: 2;
     color: var(--text-secondary);
     transition: color 0.2s ease;
-    /* Menentukan lebar tetap untuk ikon agar teks tidak terlalu terdorong */
-    flex-shrink: 0; /* Penting: mencegah ikon mengecil */
+    flex-shrink: 0;
 }
 
 .profile-popup a:hover .lucide,
 .profile-popup button:not(.logout-btn):hover .lucide,
-/* Jika ada kelas 'active' atau 'selected' untuk ikon aktif, tambahkan di sini */
 .profile-popup a.active .lucide,
-.profile-popup button.active .lucide { /* Contoh: jika ada kelas 'active' */
+.profile-popup button.active .lucide {
     color: white;
 }
-.theme-section { padding: 0 12px;}
-.theme-section label {font-size: 13px;color: var(--text-secondary);margin-bottom: 8px;display: block;}
-.theme-options {display: flex;gap: 8px;}
-.theme-options button {flex: 1;justify-content: center;padding: 8px;  background-color: var(--bg-tertiary);}
-.logout-btn {color: var(--danger);font-weight: 600;}
-.logout-btn .lucide {color: var(--danger);}
-.logout-btn:hover {background-color: var(--danger);color: white;}
-.logout-btn:hover .lucide {color: white;}
+
+.theme-section {
+    padding: 0 12px;
+}
+
+.theme-section label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    display: block;
+}
+
+.theme-options {
+    display: flex;
+    gap: 8px;
+}
+
+.theme-options button {
+    flex: 1;
+    justify-content: center;
+    padding: 8px;
+    background-color: var(--bg-tertiary);
+}
+
+.logout-btn {
+    color: var(--danger);
+    font-weight: 600;
+}
+
+.logout-btn .lucide {
+    color: var(--danger);
+}
+
+.logout-btn:hover {
+    background-color: var(--danger);
+    color: white;
+}
+
+.logout-btn:hover .lucide {
+    color: white;
+}
+
 /* =================================================================== */
 /* === 4. KOMPONEN NAVIGASI (MOBILE-FIRST: BOTTOM NAV) === */
 /* =================================================================== */

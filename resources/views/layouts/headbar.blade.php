@@ -9,46 +9,42 @@
 
     {{-- KANAN: Profil Dropdown --}}
     <div class="right">
-@php $user = Auth::user(); @endphp
+        @php $user = Auth::user(); @endphp
 
-@if ($user)
-    <div class="profile-dropdown">
-    <div class="user-label" onclick="toggleProfileDropdown()">
-        <span class="user-name">{{ $user->full_name ?? $user->name }}</span>
-        <button class="profile-trigger">
-                {{-- Hapus <img> avatar, ganti dengan ikon ini --}}
-                <i data-lucide="settings" class="settings-icon"></i>
-            </button>
-    </div>
-
-        <div class="profile-popup" id="profileDropdown">
-            <div class="profile-info">
-                <strong>{{ $user->full_name ?? $user->name }}</strong><br>
-                <br><small>{{ $user->email }}</small>
-            </div>
-            <hr>
-            <a href="{{ route('profile.edit') }}">Account Preferences</a>
-            <hr>
-            <div class="theme-section">
-                <label>Theme</label>
-                <div class="theme-options">
-                    <button onclick="setTheme('dark')">Dark</button>
-                    <button onclick="setTheme('light')">Light</button>
-                    <button onclick="setTheme('system')">System</button>
+        @if ($user)
+            <div class="profile-dropdown">
+                <div class="user-label" onclick="toggleProfileDropdown()">
+                    {{-- <span class="user-name">{{ $user->full_name ?? $user->name }}</span> --}} <button class="profile-trigger">
+                        <i data-lucide="settings" class="settings-icon"></i>
+                    </button>
+                </div>
+                <div class="profile-popup" id="profileDropdown">
+                    <div class="profile-info">
+                        <strong>{{ $user->full_name ?? $user->name }}</strong><br>
+                        <br><small>{{ $user->email }}</small>
+                    </div>
+                    <hr>
+                    <a href="{{ route('profile.edit') }}">Account Preferences</a>
+                    <hr>
+                    <div class="theme-section">
+                        <label>Theme</label>
+                        <div class="theme-options">
+                            <button onclick="setTheme('dark')">Dark</button>
+                            <button onclick="setTheme('light')">Light</button>
+                            <button onclick="setTheme('system')">System</button>
+                        </div>
+                    </div>
+                    <hr>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="logout-btn">
+                            <i data-lucide="log-out"></i>
+                            <span>Log out</span>
+                        </button>
+                    </form>
                 </div>
             </div>
-            <hr>
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" class="logout-btn">
-        <i data-lucide="log-out"></i>
-        <span>Log out</span>
-    </button>
-            </form>
-        </div>
-    </div>
-@endif
-
+        @endif
     </div>
 </div>
 
@@ -64,8 +60,10 @@
     document.addEventListener('click', function (event) {
         const trigger = document.querySelector('.profile-trigger');
         const dropdown = document.getElementById('profileDropdown');
-        if (!trigger.contains(event.target) && !dropdown.contains(event.target)) {
+        const userLabel = document.querySelector('.user-label'); // Include user-label in click detection
+        if (!userLabel.contains(event.target) && !dropdown.contains(event.target)) {
             dropdown.classList.remove('show');
+            document.querySelector('.settings-icon').classList.remove('rotate'); // Also remove rotate
         }
     });
 

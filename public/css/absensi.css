@@ -244,7 +244,14 @@ html.dark .form-group label {
     color: var(--text-primary);
     background: var(--bg-secondary);
 }
-
+/* Styling khusus untuk input tipe date */
+input[type="date"].tambah-absen-input {
+    /* Ini akan membantu penyesuaian tampilan ikon kalender default browser */
+    -webkit-appearance: none; /* Untuk Safari/Chrome */
+    -moz-appearance: none; /* Untuk Firefox */
+    appearance: none; /* Properti standar */
+    /* ... (komentar) ... */
+}
 .form-section {
     margin-bottom: 20px;
 }
@@ -598,6 +605,7 @@ body {
     border: 0.2px solid var(--accent);
     box-shadow: 0 4px 10px var(--shadow);
     flex-grow: 1;
+    position: relative;
     overflow: hidden;
 }
 
@@ -644,7 +652,23 @@ body {
     filter: brightness(0.9);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
+.filter-input.date-display-input {
+    background-color: var(--bg-primary); /* Gunakan warna background utama tema */
+    border: 1px solid var(--border); /* Gunakan warna border tema */
+    color: var(--text-primary); /* Gunakan warna teks utama tema */
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 1rem;
+    cursor: pointer;
+    width: auto;
+    box-sizing: border-box;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
 
+/* Optional: Add a subtle hover effect */
+.filter-input.date-display-input:hover {
+    border-color: var(--accent); /* Example hover color */
+}
 .filter-area {
     display: flex;
     justify-content: flex-start;
@@ -654,6 +678,44 @@ body {
     width: auto;
     margin-top: 0;
     margin-bottom: 16px;
+}
+.profile-alert-base { /* Menggantikan .success-message di contoh Anda */
+    background: var(--accent);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateY(-20px);
+    pointer-events: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    z-index: 10;
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;/* Transisi saat muncul */
+}
+
+
+
+/* Kelas untuk menampilkan toast */
+.profile-alert-base.show-alert { /* Menggantikan .success-message.show */
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto; /* Aktifkan interaksi saat terlihat */
+}
+
+/* Kelas untuk menyembunyikan toast */
+.profile-alert-base.hide-alert { /* Menggantikan .success-message.fade-out */
+    opacity: 0;
+    transform: translateY(-20px); /* Kembali ke posisi awal */
+    transition: opacity 0.4s ease-in, transform 0.4s ease-in; /* Transisi saat menyembunyikan */
 }
 
 .filter-area label {
@@ -932,16 +994,7 @@ html.dark .absensi-table {
     border-color: var(--accent);
 }
 
-.success-message {
-    background-color: #d4edda;
-    color: #155724;
-    padding: 10px 15px;
-    border-radius: 8px;
-    border: 1px solid #c3e6cb;
-    margin-bottom: 15px;
-    opacity: 1;
-    transition: opacity 0.5s ease-out;
-}
+
 
 .fade-anim {
     animation: fadeIn 0.3s ease-in-out;

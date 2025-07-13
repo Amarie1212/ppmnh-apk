@@ -117,7 +117,7 @@ html.dark .santri-table td {
     border-top: none !important;
     padding: 10px 0 !important;
     background-color: transparent !important;
-    height: auto !important; 
+    height: auto !important;
 }
 
 /* --- Responsive Styles --- */
@@ -332,8 +332,11 @@ html.dark .santri-table td {
     position: absolute;
     top: 24px;
     left: 24px;
-    right: 24px;
-    width: auto;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     box-sizing: border-box;
     z-index: 10;
     transition: opacity 0.3s ease-out, transform 0.3s ease-out;

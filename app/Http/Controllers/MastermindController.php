@@ -38,15 +38,16 @@ class MastermindController extends Controller
         return view('mastermind.list_santri', compact('users'));
     }
 
-    public function izinAbsen()
-    {
-        $penerobosByKelas = User::where('role', 'penerobos')
-            ->where('kelas', '!=', 'pending')
-            ->get()
-            ->groupBy('kelas');
+ public function izinAbsen()
+{
+    $usersByKelas = User::whereIn('role', ['penerobos', 'dewanguru'])
+        ->where('kelas', '!=', 'pending')
+        ->get()
+        ->groupBy('kelas');
 
-        return view('mastermind.izinabsen', compact('penerobosByKelas'));
-    }
+    return view('mastermind.izinabsen', compact('usersByKelas'));
+}
+
 
     public function updateIzinAbsen(Request $request, User $user)
     {
