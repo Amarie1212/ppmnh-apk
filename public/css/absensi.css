@@ -484,7 +484,7 @@ input[type="date"].tambah-absen-input {
 
     .santri-name {
         font-weight: normal;
-        font-size: 0.8em;
+        font-size: 0.9em; /* Adjusted for better readability */
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -493,7 +493,7 @@ input[type="date"].tambah-absen-input {
 
     .santri-kelas {
         font-weight: normal;
-        font-size: 0.7em;
+        font-size: 0.8em; /* Adjusted for better readability */
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -555,18 +555,18 @@ input[type="date"].tambah-absen-input {
 
     .santri-name {
         font-weight: normal;
-        font-size: 0.9em;
+        font-size: 0.9em; /* Keeping consistent or slightly smaller if needed for very small screens */
     }
 
     .santri-kelas {
         font-weight: normal;
-        font-size: 0.7em;
+        font-size: 0.8em; /* Keeping consistent or slightly smaller if needed for very small screens */
     }
 
     .status-btn {
-        width: 25px !important;
-        height: 25px !important;
-        font-size: 0.9em !important;
+        width: 28px !important; /* Slightly adjusted for better touch target */
+        height: 28px !important; /* Slightly adjusted for better touch target */
+        font-size: 0.85em !important; /* Slightly smaller to fit */
     }
 }
 
